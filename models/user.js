@@ -30,8 +30,7 @@ const userSchema=new Schema(
         },
         Password:{
             type:String,
-            minlength:8,
-            maxlength:30
+            
         },
         Role:{
             type:String
@@ -54,6 +53,9 @@ const userSchema=new Schema(
         },
         VString:{
             type:String,
+        },
+        token:{
+            type:String
         }
         
     
