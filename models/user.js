@@ -52,8 +52,9 @@ const userSchema=new Schema(
             type:Boolean,
             default:false
         },
-        VString:{
-            type:String
+        vString:{
+            digits:{type: String},
+            created:{type:String}
         },
         token:{
             type:String

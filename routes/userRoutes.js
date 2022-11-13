@@ -1,5 +1,5 @@
 import express from 'express';
-import { addOnce, deleteOnce, emailsend, emailverify, getAll, getById, login, register, updateOnce, updatePassword } from '../controllers/userController.js';
+import { addOnce, deleteOnce,getAll, getById, login, register, resetPassword, sendpasswordEmail, sendverifyEmail, updateOnce, updatePassword, verifyEmail } from '../controllers/userController.js';
 import multer from '../middlewares/multer-config.js'
 import auth from "../middlewares/auth.js";
 
@@ -25,8 +25,10 @@ router
 router.route('/login').post(login);
 router.route('/register').post(register);
 router.route('/pw/:id').put(updatePassword);
-router.route('/email').post(emailsend);
-router.route('/verify/:id/:token').get(emailverify);
+router.route('/email').post(sendverifyEmail);
+router.route('/verify/:id/:token').get(verifyEmail);
+router.route('/passwordemail').post(sendpasswordEmail);
+router.route('/resetpassword/:id').post(resetPassword)
 router.post("/home",auth, (req, res) => {
     res.status(200).send("Logged in");
   });

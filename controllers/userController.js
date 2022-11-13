@@ -1,11 +1,13 @@
 import { User, validate } from '../models/user.js';
 import { validationResult } from 'express-validator';
-import sendEmail from "../utils/email.js";
+import verificationEmail from "../utils/verificationEmail.js";
+import passwordEmail from "../utils/passwordEmail.js"
 import Token from '../models/token.js'
 import CryptoJS from 'crypto-js'
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto'
 import bcrypt from 'bcryptjs';
+import { setTimeout } from 'timers/promises';
 
 
 
@@ -79,8 +81,6 @@ export async function updatePassword(req, res) {
     });
 }
 
-
-
 export async function updateOnce(req, res) {
   if (req.file) {
 
@@ -141,7 +141,6 @@ export async function updateOnce(req, res) {
 
 }
 
-
 export function deleteOnce(req, res) {
   User
     .findOneAndRemove(req.params.id, req.body)
@@ -180,6 +179,7 @@ export async function register(req, res) {
       }
     );
     NewUser.token = token;
+    
 
     res.status(201).json(NewUser);
   }
@@ -197,7 +197,7 @@ export async function login(req, res) {
     if (!(Email && Password)) {
       res.status(400).send("All fields are required");
     }
-
+   
     const user = await User.findOne({ Email });
 
 
@@ -211,13 +211,16 @@ export async function login(req, res) {
         }
       );
 
-
+      
       user.token = token;
 
 
       res.status(200).json(user);
     }
-    res.status(400).send("Invalid Credentials");
+    else {
+      res.status(400).send("Invalid Credentials");
+    }
+    
 
   }
 
@@ -226,7 +229,7 @@ export async function login(req, res) {
   }
 }
 
-export async function emailsend(req, res) {
+export async function sendverifyEmail(req, res) {
   try {
     const { error } = validate(req.body);
     if (error) return res.status(400).send("Email not correct");
@@ -240,9 +243,9 @@ export async function emailsend(req, res) {
 
       const message = `${req.protocol}://${process.env.DEVURL}:${process.env.PORT}/user/verify/${user.id}/${token.token}`;
 
-      await sendEmail(user.Email, "Email verification", message);
+      await verificationEmail(user.Email, "Email verification", message);
 
-      res.send("An Email sent to your account please verify");
+      res.send("A verification Email was sent to your account");
     }
 
   } catch (error) {
@@ -250,7 +253,7 @@ export async function emailsend(req, res) {
   }
 }
 
-export async function emailverify(req, res) {
+export async function verifyEmail(req, res) {
   try {
     const user = await User.findOne({ _id: req.params.id });
     if (!user) return res.status(400).send("Invalid link");
@@ -270,3 +273,63 @@ export async function emailverify(req, res) {
   }
 }
 
+export async function sendpasswordEmail(req, res) {
+  try {
+    const { error } = validate(req.body);
+    if (error) return res.status(400).send("Email not correct");
+
+    let user = await User.findOne({ Email: req.body.Email });
+    if (user) {
+      
+      const message = Math.floor(1000 + Math.random() * 9000).toString();
+      await User.findOneAndUpdate({ "_id": user._id }, {
+        vString:{
+          digits:message,
+          created:Date.now().toString()
+        }
+            }).then(async docs => {
+       await passwordEmail(user.Email, "Email verification", message);
+       
+        res.status(200).json("Verification string created and reset email sent.");
+        
+      })
+        .catch(err => {
+          res.status(500).json({ error: err });
+        });
+      
+    }
+
+  } catch (error) {
+    res.status(400).send("An error occured");
+  }
+}
+
+export async function resetPassword(req, res) {
+  try {
+    const user = await User.findOne({ _id: req.params.id });
+    const date = parseInt(Date.now())
+    const userdate = parseInt((user.vString.created))
+    
+    if((date - userdate) >= 600000 ){
+      res.status(400).send("This code is expired, request another one")
+    }
+    else {
+    if (user){ 
+      if (req.body.digits === user.vString.digits) {
+        const EncryptedPassword = await bcrypt.hash(req.body.Password, 10);
+        await User.findOneAndUpdate({ _id: req.params.id }, {
+          Password: EncryptedPassword
+        }).then(docs => {
+         
+          res.status(200).send("New password saved")
+          
+        })
+          .catch(err => {
+            res.status(500).send("Cant reset password");
+          });
+      }
+    }}
+  } catch (error) {
+    res.status(400).send("Error caught");
+  }
+}
