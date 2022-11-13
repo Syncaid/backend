@@ -99,7 +99,9 @@ export async function updateOnce(req, res) {
       ProfilePhoto: EncryptedImgPath,
       FaintsPerDay: req.body.FaintsPerDay,
       AgeWhenDiagnosed: req.body.AgeWhenDiagnosed,
-      Location: req.body.Location
+      Location: req.body.Location,
+      Guardians: req.body.Guardians,
+      Patients: req.body.Patients
     })
       .then(docs => {
 
@@ -118,12 +120,14 @@ export async function updateOnce(req, res) {
         Gender: req.body.Gender,
         Country: req.body.Country,
         Tel: req.body.Tel,
-
         Role: req.body.role,
         Email: req.body.Email,
         FaintsPerDay: req.body.FaintsPerDay,
         AgeWhenDiagnosed: req.body.AgeWhenDiagnosed,
-        Location: req.body.Location
+        Location: req.body.Location,
+        Guardians: req.body.Guardians,
+        Patients: req.body.Patients
+
       })
       .then(docs => {
 
@@ -228,19 +232,19 @@ export async function emailsend(req, res) {
     if (error) return res.status(400).send("Email not correct");
 
     let user = await User.findOne({ Email: req.body.Email });
-    if (user) { 
+    if (user) {
       let token = await new Token({
         userId: user._id,
         token: crypto.randomBytes(32).toString("hex"),
       }).save();
 
       const message = `${req.protocol}://${process.env.DEVURL}:${process.env.PORT}/user/verify/${user.id}/${token.token}`;
-      
+
       await sendEmail(user.Email, "Email verification", message);
-  
+
       res.send("An Email sent to your account please verify");
     }
-    
+
   } catch (error) {
     res.status(400).send("An error occured");
   }
