@@ -1,6 +1,7 @@
 import {User, validate} from '../models/user.js';
 import { validationResult } from 'express-validator';
 import sendEmail from "../utils/email.js";
+import Token from '../models/token.js'
 import CryptoJS from 'crypto-js'
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto'
@@ -251,15 +252,14 @@ export async function emailsend (req,res) {
       const user = await User.findOne({ _id: req.params.id });
       if (!user) return res.status(400).send("Invalid link");
   
-      const token = await User.findOne({
-        
+      const token = await Token.findOne({
+        userId: user._id,
         token: req.params.token,
       });
       if (!token) return res.status(400).send("Token invalid");
   
-      await user.updateOne({ Verified: true });
-      await user.updateOne({token: "" });
-      console.log("here")
+      await user.updateOne({ _id: user._id, Verified: true });
+      await Token.findByIdAndRemove(token._id);
   
       res.send("email verified sucessfully");
     } catch (error) {
