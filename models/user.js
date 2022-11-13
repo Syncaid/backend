@@ -7,7 +7,7 @@ import Joi from 'joi'
 const userSchema=new Schema(
     {
         FirstName:{
-            type:String,          
+            type:String         
         },
         LastName:{
             type:String          
@@ -27,10 +27,10 @@ const userSchema=new Schema(
             maxlength:8      
         },
         Email:{
-            type:String,
+            type:String
         },
         Password:{
-            type:String,
+            type:String
             
         },
         Role:{
@@ -53,12 +53,17 @@ const userSchema=new Schema(
             default:false
         },
         VString:{
-            type:String,
+            type:String
         },
         token:{
             type:String
-        }
-        
+        },
+        Patients:[{
+            type: String
+        }],
+        Guardians:[{
+            type: String
+        }],
     
     },
 
@@ -69,7 +74,6 @@ const userSchema=new Schema(
 
 const validate = (user) => {
     const schema = Joi.object({
-      FirstName: Joi.string().min(3).max(255).required(),
       Email: Joi.string().email().required(),
     });
     return schema.validate(user);
