@@ -1,7 +1,9 @@
-import User from '../models/user.js';
+import {User, validate} from '../models/user.js';
 import { validationResult } from 'express-validator';
+import sendEmail from "../utils/email.js";
 import CryptoJS from 'crypto-js'
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto'
 import bcrypt from 'bcryptjs';
 
 
@@ -63,20 +65,34 @@ export async function addOnce(req,res){
     } 
 }
 
-export function updateOnce(req,res){
+export async function updatePassword(req,res) { 
+    
+    const EncryptedPassword = await bcrypt.hash(req.body.Password, 10);
+    await User.findOneAndUpdate({"_id":req.params.id},{
+        Password:EncryptedPassword 
+    }).then(docs=>{
+        res.status(200).json(docs);
+       })
+       .catch(err=>{
+        res.status(500).json({error:err});
+    });
+}
+
+
+
+export async function updateOnce(req,res){
     if (req.file) {
+       
         var EncryptedImgPath = CryptoJS.AES.
         encrypt(`${req.protocol}://${req.get('host')}${process.env.IMGURL}/${req.file.filename}`
         ,process.env.IMGKEY).toString();
-        User
-        .findOneAndUpdate({"_id":req.params.id},{
+        User.findOneAndUpdate({"_id":req.params.id},{
             FirstName:req.body.FirstName,
             LastName:req.body.LastName,
             BirthDate:req.body.BirthDate,
             Gender:req.body.Gender,
             Country:req.body.Country,
             Tel:req.body.Tel,
-            Password:req.body.Password,
             Role:req.body.role,
             Email:req.body.Email, 
             ProfilePhoto:EncryptedImgPath,
@@ -101,7 +117,7 @@ export function updateOnce(req,res){
             Gender:req.body.Gender,
             Country:req.body.Country,
             Tel:req.body.Tel,
-            Password:req.body.Password,
+            
             Role:req.body.role,
             Email:req.body.Email,
             FaintsPerDay:req.body.FaintsPerDay,
@@ -204,4 +220,50 @@ export async function login(req,res){
         console.log(err);
     }
 }
+export async function emailsend (req,res) {
+    try {
+      const { error } = validate(req.body);
+      if (error) return res.status(400).send("Email not correct");
+  
+      let user = await User.findOne({ Email: req.body.email });
+      if (user)
+        return res.status(400).send("User with given email already exist!");
+        
+      user = await new User({
+        FirstName: req.body.FirstName,
+        Email: req.body.email,
+        token: crypto.randomBytes(32).toString("hex"),
+      }).save();
+  
+      
+  
+      const message = `${process.env.DBURL}/verify/${user.id}/${user.token}`;
+      await sendEmail(user.Email, "Verify Email", message);
+  
+      res.send("An Email sent to your account please verify");
+    } catch (error) {
+      res.status(400).send("An error occured");
+    }
+  }
+
+  export async function emailverify (req,res) {
+    try {
+      const user = await User.findOne({ _id: req.params.id });
+      if (!user) return res.status(400).send("Invalid link");
+  
+      const token = await User.findOne({
+        
+        token: req.params.token,
+      });
+      if (!token) return res.status(400).send("Token invalid");
+  
+      await user.updateOne({ Verified: true });
+      await user.updateOne({token: "" });
+      console.log("here")
+  
+      res.send("email verified sucessfully");
+    } catch (error) {
+      res.status(400).send("An error occured");
+    }
+  }
 

@@ -1,6 +1,7 @@
 import { Long } from "bson";
 import mongoose from "mongoose"; 
 const {Schema,model} =mongoose;
+import Joi from 'joi'
 
 
 const userSchema=new Schema(
@@ -66,4 +67,14 @@ const userSchema=new Schema(
     }
 );
 
-export default model("User",userSchema);
+const validate = (user) => {
+    const schema = Joi.object({
+      FirstName: Joi.string().min(3).max(255).required(),
+      Email: Joi.string().email().required(),
+    });
+    return schema.validate(user);
+  };
+
+const User = mongoose.model("user", userSchema);
+
+export {User, validate};
