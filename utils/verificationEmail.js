@@ -2,25 +2,25 @@ import nodemailer from 'nodemailer'
 
 
 const verificationEmail = async (email, subject, text) => {
-  try {
-    const transporter = nodemailer.createTransport({
-      host: process.env.HOST,
-      service: 'gmail',
-      port: 587,
-      secure: true,
-      auth: {
-        user: process.env.EMAIL,
-        pass: process.env.EMAILPASSWORD
-,
-      },
-    
-    }
-    );
-    await transporter.sendMail({
-      from: process.env.EMAIL,
-      to: email,
-      subject: subject,
-      html:`<!DOCTYPE html>
+    try {
+        const transporter = nodemailer.createTransport({
+            host: process.env.HOST,
+            service: 'gmail',
+            port: 587,
+            secure: true,
+            auth: {
+                user: process.env.EMAIL,
+                pass: process.env.EMAILPASSWORD
+                ,
+            },
+
+        }
+        );
+        await transporter.sendMail({
+            from: process.env.EMAIL,
+            to: email,
+            subject: subject,
+            html: `<!DOCTYPE html>
       <html>
       
       <head>
@@ -162,7 +162,7 @@ const verificationEmail = async (email, subject, text) => {
                                           <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 60px 30px;">
                                               <table border="0" cellspacing="0" cellpadding="0">
                                                   <tr>
-                                                      <td align="center" style="border-radius: 20px;" bgcolor="#C19BFF"><a href="${text}" target="_blank" style="font-size: 20px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; color: #ffffff; text-decoration: none; padding: 15px 25px; border-radius: 2px; display: inline-block;">Confirm Account</a></td>
+                                                      <td align="center" style="border-radius: 20px;" bgcolor="#C19BFF"><a href="${text}" target="_blank" style="font-size: 20px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; color: #ffffff; text-decoration: none; padding: 15px 25px; border-radius: 2px; display: inline-block;">Confirm account</a></td>
                                                   </tr>
                                               </table>
                                           </td>
@@ -170,19 +170,10 @@ const verificationEmail = async (email, subject, text) => {
                                   </table>
                               </td>
                           </tr> <!-- COPY -->
-                          <tr>
-                              <td bgcolor="#ffffff" align="left" style="padding: 0px 30px 0px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;">
-                                  <p style="margin: 0;">If that doesn't work, copy and paste the following link in your browser:</p>
-                              </td>
-                          </tr> <!-- COPY -->
-                          <tr>
-                              <td bgcolor="#ffffff" align="left" style="padding: 20px 30px 20px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;">
-                                  <p style="margin: 0;"><a href="#" target="_blank" style="color: #C19BFF;">${text}</a></p>
-                              </td>
-                          </tr>
+            
                           <tr>
                               <td bgcolor="#ffffff" align="left" style="padding: 0px 30px 20px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;">
-                                  <p style="margin: 0;">If you have any questions, just reply to this email&mdash;we're always happy to help out.</p>
+                                  <p style="margin: 0;">If you have any questions, just reply to this email we're always happy to help out.</p>
                               </td>
                           </tr>
                           <tr>
@@ -205,13 +196,13 @@ const verificationEmail = async (email, subject, text) => {
       </body>
       
       </html>`
-      
-    });
-    console.log("Email sent sucessfully");
-  } catch (error) {
-    console.log("Email not sent");
-    console.log(error);
-  }
+
+        });
+        console.log("Email sent sucessfully");
+    } catch (error) {
+        console.log("Email not sent");
+        console.log(error);
+    }
 };
 
 export default verificationEmail;

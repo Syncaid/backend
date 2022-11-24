@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 const {Schema,model} =mongoose;
 
-const tokenSchema = new Schema({
+const emailtokenSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     ref: "user",
@@ -13,6 +13,6 @@ const tokenSchema = new Schema({
   },
 });
 
-const Token = mongoose.model("token", tokenSchema);
+const Emailtoken = mongoose.model("emailtoken", emailtokenSchema);
 
-export default Token;
+export default Emailtoken;

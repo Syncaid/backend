@@ -1,13 +1,12 @@
-import { User, validate } from '../models/user.js';
-import { validationResult } from 'express-validator';
+import { User } from '../models/user.js'; // add validate
 import verificationEmail from "../utils/verificationEmail.js";
 import passwordEmail from "../utils/passwordEmail.js"
-import Token from '../models/token.js'
+import Token from '../models/emailtoken.js'
 import CryptoJS from 'crypto-js'
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto'
 import bcrypt from 'bcryptjs';
-import { setTimeout } from 'timers/promises';
+
 
 
 
@@ -34,15 +33,13 @@ export function getById(req, res) {
 }
 
 export async function addOnce(req, res) {
-  if (!validationResult(req).isEmpty()) {
-    res.status(400).json({ errors: validationResult(req).array() });
-  }
 
-  else {
-    var EncryptedImgPath = CryptoJS.AES.
-      encrypt(`${req.protocol}://${req.get('host')}${process.env.IMGURL}/${req.file.filename}`
-        , process.env.IMGKEY).toString();
-    const EncryptedPassword = await bcrypt.hash(mdp, 10);
+
+
+ //  var EncryptedImgPath = CryptoJS.AES.
+  //   encrypt(`${req.protocol}://${req.get('host')}${process.env.IMGURL}/${req.file.filename}`
+    //  , process.env.IMGKEY).toString();
+    const EncryptedPassword = await bcrypt.hash(req.body.Password, 10);
     User
       .create({
         FirstName: req.body.FirstName,
@@ -52,9 +49,10 @@ export async function addOnce(req, res) {
         Country: req.body.Country,
         Tel: req.body.Tel,
         Password: EncryptedPassword,
-        Role: req.body.role,
+        Role: req.body.Role,
+        Verified: req.body.Verified,
         Email: req.body.Email,
-        ProfilePhoto: EncryptedImgPath,
+    //     ProfilePhoto: EncryptedImgPath,
         FaintsPerDay: req.body.FaintsPerDay,
         AgeWhenDiagnosed: req.body.AgeWhenDiagnosed,
         Location: req.body.Location
@@ -65,11 +63,12 @@ export async function addOnce(req, res) {
       .catch(err => {
         res.status(500).json({ error: err });
       });
-  }
+  
 }
 
 export async function updatePassword(req, res) {
 
+ 
   const EncryptedPassword = await bcrypt.hash(req.body.Password, 10);
   await User.findOneAndUpdate({ "_id": req.params.id }, {
     Password: EncryptedPassword
@@ -79,9 +78,11 @@ export async function updatePassword(req, res) {
     .catch(err => {
       res.status(500).json({ error: err });
     });
+
 }
 
 export async function updateOnce(req, res) {
+  
   if (req.file) {
 
     var EncryptedImgPath = CryptoJS.AES.
@@ -113,14 +114,14 @@ export async function updateOnce(req, res) {
   }
   else {
     User
-      .findOneAndUpdate({ "_id": req.params.id }, {
+      .findOneAndUpdate({ "_id": req.params.ID }, {
         FirstName: req.body.FirstName,
         LastName: req.body.LastName,
         BirthDate: req.body.BirthDate,
         Gender: req.body.Gender,
         Country: req.body.Country,
         Tel: req.body.Tel,
-        Role: req.body.role,
+        Role: req.body.Role,
         Email: req.body.Email,
         FaintsPerDay: req.body.FaintsPerDay,
         AgeWhenDiagnosed: req.body.AgeWhenDiagnosed,
@@ -135,6 +136,7 @@ export async function updateOnce(req, res) {
       })
       .catch(err => {
         res.status(500).json({ error: err });
+        console.log(err)
       });
   }
 
@@ -152,184 +154,6 @@ export function deleteOnce(req, res) {
     });
 }
 
-export async function register(req, res) {
-
-  try {
-    const { FirstName, LastName, Email, Password } = req.body;
-    if (!(FirstName && LastName && Email && Password)) {
-      res.status(400).send("All fields are required");
-    }
-    const oldUser = await User.findOne({ Email });
-    if (oldUser) {
-      return res.status(409).send("User already exists. Please Login");
-    }
-    const EncryptedPassword = await bcrypt.hash(Password, 10);
-    const NewUser = await User.create({
-      FirstName,
-      LastName,
-      Email: Email.toLowerCase(),
-      Password: EncryptedPassword,
-
-    });
-    const token = jwt.sign(
-      { id: NewUser._id, Email },
-      process.env.TOKENKEY,
-      {
-        expiresIn: "2h",
-      }
-    );
-    NewUser.token = token;
-    
-
-    res.status(201).json(NewUser);
-  }
-  catch (err) {
-    console.log(err);
-  }
-}
-
-export async function login(req, res) {
-
-  try {
-    const { Email, Password } = req.body;
 
 
-    if (!(Email && Password)) {
-      res.status(400).send("All fields are required");
-    }
-   
-    const user = await User.findOne({ Email });
 
-
-    if (user && (await bcrypt.compare(Password, user.Password))) {
-
-      const token = jwt.sign(
-        { id: user._id, Email },
-        process.env.TOKENKEY,
-        {
-          expiresIn: "2h",
-        }
-      );
-
-      
-      user.token = token;
-
-
-      res.status(200).json(user);
-    }
-    else {
-      res.status(400).send("Invalid Credentials");
-    }
-    
-
-  }
-
-  catch (err) {
-    console.log(err);
-  }
-}
-
-export async function sendverifyEmail(req, res) {
-  try {
-    const { error } = validate(req.body);
-    if (error) return res.status(400).send("Email not correct");
-
-    let user = await User.findOne({ Email: req.body.Email });
-    if (user) {
-      let token = await new Token({
-        userId: user._id,
-        token: crypto.randomBytes(32).toString("hex"),
-      }).save();
-
-      const message = `${req.protocol}://${process.env.DEVURL}:${process.env.PORT}/user/verify/${user.id}/${token.token}`;
-
-      await verificationEmail(user.Email, "Email verification", message);
-
-      res.send("A verification Email was sent to your account");
-    }
-
-  } catch (error) {
-    res.status(400).send("An error occured");
-  }
-}
-
-export async function verifyEmail(req, res) {
-  try {
-    const user = await User.findOne({ _id: req.params.id });
-    if (!user) return res.status(400).send("Invalid link");
-
-    const token = await Token.findOne({
-      userId: user._id,
-      token: req.params.token,
-    });
-    if (!token) return res.status(400).send("Token invalid");
-
-    await user.updateOne({ _id: user._id, Verified: true });
-    await Token.findByIdAndRemove(token._id);
-
-    res.send("Email verified sucessfully");
-  } catch (error) {
-    res.status(400).send("An error occured");
-  }
-}
-
-export async function sendpasswordEmail(req, res) {
-  try {
-    const { error } = validate(req.body);
-    if (error) return res.status(400).send("Email not correct");
-
-    let user = await User.findOne({ Email: req.body.Email });
-    if (user) {
-      
-      const message = Math.floor(1000 + Math.random() * 9000).toString();
-      await User.findOneAndUpdate({ "_id": user._id }, {
-        vString:{
-          digits:message,
-          created:Date.now().toString()
-        }
-            }).then(async docs => {
-       await passwordEmail(user.Email, "Email verification", message);
-       
-        res.status(200).json("Verification string created and reset email sent.");
-        
-      })
-        .catch(err => {
-          res.status(500).json({ error: err });
-        });
-      
-    }
-
-  } catch (error) {
-    res.status(400).send("An error occured");
-  }
-}
-
-export async function resetPassword(req, res) {
-  try {
-    const user = await User.findOne({ _id: req.params.id });
-    const date = parseInt(Date.now())
-    const userdate = parseInt((user.vString.created))
-    
-    if((date - userdate) >= 600000 ){
-      res.status(400).send("This code is expired, request another one")
-    }
-    else {
-    if (user){ 
-      if (req.body.digits === user.vString.digits) {
-        const EncryptedPassword = await bcrypt.hash(req.body.Password, 10);
-        await User.findOneAndUpdate({ _id: req.params.id }, {
-          Password: EncryptedPassword
-        }).then(docs => {
-         
-          res.status(200).send("New password saved")
-          
-        })
-          .catch(err => {
-            res.status(500).send("Cant reset password");
-          });
-      }
-    }}
-  } catch (error) {
-    res.status(400).send("Error caught");
-  }
-}

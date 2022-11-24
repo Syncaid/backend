@@ -1,11 +1,11 @@
 import { Long } from "bson";
 import mongoose from "mongoose"; 
 const {Schema,model} =mongoose;
-import Joi from 'joi'
 
 
 const userSchema=new Schema(
-    {
+    {   
+
         FirstName:{
             type:String         
         },
@@ -13,7 +13,7 @@ const userSchema=new Schema(
             type:String          
         },
         BirthDate:{
-            type:Date
+            type:String
         },
         Gender:{
             type:String            
@@ -22,16 +22,13 @@ const userSchema=new Schema(
             type:String            
         },
         Tel:{
-            type:String,
-            minlength:8,
-            maxlength:8      
+            type:String,               
         },
         Email:{
             type:String
         },
         Password:{
-            type:String
-            
+            type:String 
         },
         Role:{
             type:String
@@ -49,14 +46,12 @@ const userSchema=new Schema(
             type:String
         }, 
         Verified:{
+            default:false,
             type:Boolean,
-            default:false
         },
-        vString:{
-            digits:{type: String},
-            created:{type:String}
-        },
-        token:{
+        vString:{type:String}
+        ,
+        Token:{
             type:String
         },
         Patients:[{
@@ -73,13 +68,7 @@ const userSchema=new Schema(
     }
 );
 
-const validate = (user) => {
-    const schema = Joi.object({
-      Email: Joi.string().email().required(),
-    });
-    return schema.validate(user);
-  };
 
 const User = mongoose.model("user", userSchema);
 
-export {User, validate};
+export {User}; 
