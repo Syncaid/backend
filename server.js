@@ -1,17 +1,17 @@
-import express from 'express';
+import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import * as dotenv from 'dotenv'
-import userRoutes from './routes/userRoutes.js'
+import * as dotenv from "dotenv";
+import userRoutes from "./routes/userRoutes.js";
+import faintRoutes from "./routes/faintRoutes.js";
 
+const app = express();
 
-const app=express();
-
-dotenv.config()
-const hostname=process.env.DEVURL;
-const port=process.env.PORT;
-const databaseName =process.env.DBNAME;
-const databaseURL=process.env.DBURL
+dotenv.config();
+const hostname = process.env.DEVURL;
+const port = process.env.PORT;
+const databaseName = process.env.DBNAME;
+const databaseURL = process.env.DBURL;
 mongoose.set("debug", true);
 mongoose.Promise = global.Promise;
 
@@ -27,12 +27,9 @@ mongoose
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/user',userRoutes);
+app.use("/user", userRoutes);
+app.use("/faint", faintRoutes);
 
-
-app.listen(port,hostname,()=>{
-    console.log(`Server running`);
+app.listen(port, hostname, () => {
+  console.log(`Server running`);
 });
-
-
-

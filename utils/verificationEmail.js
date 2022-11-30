@@ -1,26 +1,22 @@
-import nodemailer from 'nodemailer'
-
+import nodemailer from "nodemailer";
 
 const verificationEmail = async (email, subject, text) => {
-    try {
-        const transporter = nodemailer.createTransport({
-            host: process.env.HOST,
-            service: 'gmail',
-            port: 587,
-            secure: true,
-            auth: {
-                user: process.env.EMAIL,
-                pass: process.env.EMAILPASSWORD
-                ,
-            },
-
-        }
-        );
-        await transporter.sendMail({
-            from: process.env.EMAIL,
-            to: email,
-            subject: subject,
-            html: `<!DOCTYPE html>
+  try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.HOST,
+      service: "gmail",
+      port: 587,
+      secure: true,
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAILPASSWORD,
+      },
+    });
+    await transporter.sendMail({
+      from: process.env.EMAIL,
+      to: email,
+      subject: subject,
+      html: `<!DOCTYPE html>
       <html>
       
       <head>
@@ -195,14 +191,13 @@ const verificationEmail = async (email, subject, text) => {
           </table>
       </body>
       
-      </html>`
-
-        });
-        console.log("Email sent sucessfully");
-    } catch (error) {
-        console.log("Email not sent");
-        console.log(error);
-    }
+      </html>`,
+    });
+    console.log("Email sent sucessfully");
+  } catch (error) {
+    console.log("Email not sent");
+    console.log(error);
+  }
 };
 
 export default verificationEmail;

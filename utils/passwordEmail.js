@@ -1,26 +1,22 @@
-import nodemailer from 'nodemailer'
-
+import nodemailer from "nodemailer";
 
 const passwordEmail = async (email, subject, text) => {
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.HOST,
-      service: 'gmail',
+      service: "gmail",
       port: 587,
       secure: true,
       auth: {
         user: process.env.EMAIL,
-        pass: process.env.EMAILPASSWORD
-,
+        pass: process.env.EMAILPASSWORD,
       },
-    
-    }
-    );
+    });
     await transporter.sendMail({
       from: process.env.EMAIL,
       to: email,
       subject: subject,
-      html:`<!DOCTYPE html>
+      html: `<!DOCTYPE html>
       <html>
       
       <head>
@@ -201,8 +197,7 @@ style="border-radius:20px;background-color:white;border: 5px solid #C19BFF;width
       </body>
       
       </html>
-      `
-      
+      `,
     });
     console.log("Email sent sucessfully");
   } catch (error) {
