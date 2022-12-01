@@ -4,11 +4,12 @@ const { Schema, model } = mongoose;
 
 const faintSchema = new Schema(
   {
-    Date: {
-      type: Date,
-    },
     UserId: { type: String },
     Duration: {
+      type: String,
+    }
+    , 
+    Time: {
       type: String,
     },
   },
