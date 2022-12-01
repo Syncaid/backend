@@ -34,9 +34,9 @@ export function getById(req, res) {
 
 export async function addOnce(req, res) {
   Faint.create({
-    Date: req.body.Date,
-    Duration: req.body.Duration,
     UserId: req.body.UserId,
+    Duration: req.body.Duration,
+    Time: req.body.Time,
   })
     .then((docs) => {
       res.status(200).json(docs);
