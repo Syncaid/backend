@@ -18,50 +18,111 @@ export function getAll(req, res) {
 }
 
 export function getGuardians(req, res) {
+  
   User.findById(req.params.id)
-    .then((docs) => {
-      res.status(200).json(docs.Guardians);
+    .then(async (docs) => {
+       var guardians = [];
+       for (const item of docs.Guardians)  {
+      
+       let guardian = await User.findById(item._id);
+       guardians.push(guardian); 
+      
+       }
+      res.status(200).json(guardians);
     })
+    
     .catch((err) => {
       res.status(500).json({ error: err });
     });
 }
 export function getPatients(req, res) {
-  User.findById(req.params.id)
-    .then((docs) => {
-      res.status(200).json(docs.Patients);
-    })
-    .catch((err) => {
-      res.status(500).json({ error: err });
-    });
-}
-
-export function addGuardian(req, res) {
-  User.findOne({ _id: req.params.id })
-    .then((docs) => {
-      var array = docs.Guardians;
-      console.log(array);
-      array.push(req.body);
-      user.updateOne({ _id: req.params.id, Guardians: array });
-      res.status(200).json(array);
-    })
-    .catch((err) => {
-      res.status(500).json({ error: err });
-    });
-}
-
-export function addPatient(req, res) {
+  
   User.findById(req.params.id)
     .then(async (docs) => {
-      var array = docs.Patients;
-      array.push(req.body);
-      await user.updateOne({ _id: req.params.id, Patients: array });
-      res.status(200).json(array);
+       var guardians = [];
+       for (const item of docs.Patients)  {
+      
+       let patient = await User.findById(item._id);
+       patients.push(patient); 
+      
+      }
+      res.status(200).json(patients);
+    })
+    
+    .catch((err) => {
+      res.status(500).json({ error: err });
+    });
+}
+
+export async function addGuardian(req, res) {
+  
+  let Guardian = await User.findOne({Email: req.body.Email})
+  
+ if (Guardian) {
+  
+  await User.findOne({ _id: req.params.id })
+    .then(async (docs) => {
+     
+      var guardians = docs.Guardians;
+      guardians.push(Guardian._id);
+      await User.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          Guardians: guardians,
+        }
+      )
+        .then((docs) => {
+          res.status(200).json(docs);
+        })
+        .catch((err) => {
+          res.status(500).json("Cant reset password");
+        });
+      
     })
     .catch((err) => {
       res.status(500).json({ error: err });
     });
 }
+else { 
+  res.status(404).json("Unexsitant user to add as guardian")
+}
+}
+
+export async function addPatient(req, res) {
+  
+  let Patient = await User.findOne({Email: req.body.Email})
+  
+ if (Patient) {
+  
+  await User.findOne({ _id: req.params.id })
+    .then(async (docs) => {
+     
+      var patients = docs.Patients; 
+    
+      patients.push(Patient._id);
+      await User.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          Patients: patients,
+        }
+      )
+        .then((docs) => {
+          res.status(200).json(docs);
+        })
+        .catch((err) => {
+          res.status(500).json("Cant reset password");
+        });
+      
+    })
+    .catch((err) => {
+      res.status(500).json({ error: err });
+    });
+}
+else { 
+  res.status(404).json("Unexsitant user to add as patient")
+}
+}
+
 
 export function getById(req, res) {
   User.findById(req.params.id)

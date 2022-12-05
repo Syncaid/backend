@@ -89,7 +89,6 @@ export async function sendverifyEmail(req, res) {
       userId: user._id,
     });
     let token = jwt.sign({ id: user._id }, process.env.TOKENKEY);
-    console.log(token);
     newemailtoken.token = token;
     Emailtoken.create(newemailtoken)
       .then((docs) => {
@@ -135,7 +134,6 @@ export async function sendpasswordEmail(req, res) {
         passwordEmail(user.Email, "Password reset", OTP);
         user.vString = OTP;
         res.status(200).json(OTP);
-        console.log(user);
       })
       .catch((err) => {
         res.status(500).json({ error: err });
