@@ -62,8 +62,10 @@ export async function addGuardian(req, res) {
   
   await User.findOne({ _id: req.params.id })
     .then(async (docs) => {
-     
+      
       var guardians = docs.Guardians;
+      var found = guardians.find(element => element._id.equals(Guardian._id));
+      if(found == null) { 
       guardians.push(Guardian._id);
       await User.findOneAndUpdate(
         { _id: req.params.id },
@@ -75,13 +77,18 @@ export async function addGuardian(req, res) {
           res.status(200).json(docs);
         })
         .catch((err) => {
-          res.status(500).json("Cant reset password");
+          res.status(500).json("Cant add guardian");
         });
-      
+    }
+        else { 
+          res.status(500).json("Already user's guardian")
+        }
     })
     .catch((err) => {
       res.status(500).json({ error: err });
     });
+  
+   
 }
 else { 
   res.status(404).json("Unexsitant user to add as guardian")
@@ -98,7 +105,8 @@ export async function addPatient(req, res) {
     .then(async (docs) => {
      
       var patients = docs.Patients; 
-    
+      var found = patients.find(element => element._id.equals(Patient._id));
+      if(found == null) { 
       patients.push(Patient._id);
       await User.findOneAndUpdate(
         { _id: req.params.id },
@@ -110,9 +118,12 @@ export async function addPatient(req, res) {
           res.status(200).json(docs);
         })
         .catch((err) => {
-          res.status(500).json("Cant reset password");
+          res.status(500).json("Cant add patient");
         });
-      
+      }
+      else { 
+        res.status(500).json("Already user's guardian")
+      }
     })
     .catch((err) => {
       res.status(500).json({ error: err });
@@ -123,6 +134,87 @@ else {
 }
 }
 
+export async function deleteGuardian(req, res) {
+  
+  let Guardian = await User.findOne({_id: req.body.id})
+  
+ if (Guardian) {
+  
+  await User.findOne({ _id: req.params.id })
+    .then(async (docs) => {
+      
+      var guardians = docs.Guardians;
+      const index = guardians.findIndex(element => element._id.equals(Guardian._id));
+      if(index != null) { 
+      guardians.splice(index,1)
+      await User.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          Guardians: guardians,
+        }
+      )
+        .then((docs) => {
+          res.status(200).json(docs);
+        })
+        .catch((err) => {
+          res.status(500).json("Cant delete guardian");
+        });
+    }
+        else { 
+          res.status(500).json("Guardian not assigned as guardian")
+        }
+    })
+    .catch((err) => {
+      res.status(500).json({ error: err });
+    });
+  
+   
+}
+else { 
+  res.status(404).json("Guardian user not found")
+}
+}
+
+export async function deletePatient(req, res) {
+  
+  let Patient = await User.findOne({_id: req.body.id})
+  
+ if (Patient) {
+  
+  await User.findOne({ _id: req.params.id })
+    .then(async (docs) => {
+      
+      var patients = docs.Patients;
+      const index = patients.findIndex(element => element._id.equals(Patient._id));
+      if(index != null) { 
+      patients.splice(index,1)
+      await User.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          Patients: patients,
+        }
+      )
+        .then((docs) => {
+          res.status(200).json(docs);
+        })
+        .catch((err) => {
+          res.status(500).json("Cant delete patient");
+        });
+    }
+        else { 
+          res.status(500).json("Patient user exists but is not assigned as patient")
+        }
+    })
+    .catch((err) => {
+      res.status(500).json({ error: err });
+    });
+  
+   
+}
+else { 
+  res.status(404).json("Patient user not found")
+}
+}
 
 export function getById(req, res) {
   User.findById(req.params.id)

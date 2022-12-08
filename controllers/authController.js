@@ -67,6 +67,36 @@ export async function login(req, res) {
   }
 }
 
+
+export async function googlelogin(req, res) {
+  const { Email } = req.body;
+
+  if (!(Email)) {
+    res.status(400).send("All fields are required");
+  }
+
+  const user = await User.findOne({ Email: req.body.Email });
+
+  if (user) {
+  
+      const newToken = await jwt.sign({ id: user._id }, process.env.TOKENKEY, {
+        expiresIn: "4h",
+      });
+      user.Token = newToken;
+      user
+        .updateOne({ _id: user._id, Token: newToken })
+        .then((docs) => {
+          res.status(200).json(user);
+        })
+        .catch((err) => {
+          res.status(500).json({ error: err });
+        });
+   
+  } else {
+    res.status(404).send("Unexistant user");
+  }
+}
+
 export async function logout(req, res) {
   await User.findOneAndUpdate(
     { _id: req.params.id },
