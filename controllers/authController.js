@@ -122,15 +122,16 @@ export async function sendverifyEmail(req, res) {
     newemailtoken.token = token;
     Emailtoken.create(newemailtoken)
       .then((docs) => {
-        res.status(200).json(docs);
+        res.status(200).json("emailtoken created");
+        const message = `${req.protocol}://${process.env.DEVURL}:${process.env.PORT}/user/verify/${user._id}/${newemailtoken.token}`;
+
+        verificationEmail(user.Email, "Email verification", message);
       })
       .catch((err) => {
         res.status(500).json({ error: err });
       });
 
-    const message = `${req.protocol}://${process.env.DEVURL}:${process.env.PORT}/user/verify/${user._id}/${newemailtoken.token}`;
-
-    verificationEmail(user.Email, "Email verification", message);
+   
   }
 }
 

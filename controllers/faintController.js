@@ -66,7 +66,7 @@ export async function updateOnce(req, res) {
 export function deleteOnce(req, res) {
   Faint.findOneAndRemove(req.id, req.body)
     .then((docs) => {
-      res.status(200).json(            docs);
+      res.status(200).json(docs);
     })
     .catch((err) => {
       res.status(500).json({ error: err });
