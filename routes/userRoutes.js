@@ -33,7 +33,7 @@ router.route("/googlelogin").post(googlelogin);
 router.route("/login").post(login);
 router.route("/logout/:id").post(logout);
 router.route("/register").post(register);
-router.route("/pw/:id").put(updatePassword);
+router.route("/updatepassword/:id").put(updatePassword);
 router.route("/verificationemail").post(sendverifyEmail);
 router.route("/verify/:id/:emailtoken").get(verifyEmail);
 router.route("/passwordemail").post(sendpasswordEmail);

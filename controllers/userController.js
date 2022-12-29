@@ -35,6 +35,7 @@ export function getGuardians(req, res) {
       res.status(500).json({ error: err });
     });
 }
+
 export function getPatients(req, res) {
   
   User.findById(req.params.id)
@@ -255,12 +256,16 @@ export async function addOnce(req, res) {
     });
 }
 
-export async function updatePassword(req, res) {
-  const EncryptedPassword = await bcrypt.hash(req.body.Password, 10);
+export async function updatePassword(req, res) {  
+  let user = await User.findOne({_id: req.params.id})  
+
+ if(await bcrypt.compare(req.body.oldPassword,user.Password)) 
+  {
+     const newPasswordEncrypted = await bcrypt.hash(req.body.newPassword, 10);
   await User.findOneAndUpdate(
     { _id: req.params.id },
     {
-      Password: EncryptedPassword,
+      Password: newPasswordEncrypted,
     }
   )
     .then((docs) => {
@@ -268,7 +273,10 @@ export async function updatePassword(req, res) {
     })
     .catch((err) => {
       res.status(500).json({ error: err });
-    });
+    }); }
+    else { 
+      res.status(500).json({"error":"Incorrect old password"})
+    }
 }
 
 export async function updateOnce(req, res) {
