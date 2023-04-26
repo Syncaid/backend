@@ -10,6 +10,7 @@ import {
   getPatients,
   updateOnce,
   updatePassword,
+  updatePhoto,
 } from "../controllers/userController.js";
 import {
   register,
@@ -20,19 +21,36 @@ import {
   verifyEmail,
   sendpasswordEmail,
   resetPassword,
+  googleregister,
 } from "../controllers/authController.js";
 import multer from "../middlewares/multer-config.js";
 import auth from "../middlewares/auth.js";
 
 const router = express.Router();
 
+
+
+/**
+ * @swagger 
+ * /user:
+ *  get:
+ *     description: Use to get all users
+ *     responses: 
+ *         '200':
+ *            description: A successful response
+ */
 router.route("/").get(getAll);
+
+
+
 router.route("/:id").get(getById);
+router.route("/updatephoto/:ID").post(multer,updatePhoto);
 router.route("/update/:ID").put(updateOnce);
 router.route("/googlelogin").post(googlelogin);
 router.route("/login").post(login);
 router.route("/logout/:id").post(logout);
 router.route("/register").post(register);
+router.route("/googleregister").post(googleregister);
 router.route("/updatepassword/:id").put(updatePassword);
 router.route("/verificationemail").post(sendverifyEmail);
 router.route("/verify/:id/:emailtoken").get(verifyEmail);

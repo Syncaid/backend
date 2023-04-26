@@ -15,16 +15,15 @@ export default multer({
       callback(null, join(__dirname, ".." + process.env.IMGURL));
     },
     filename: (req, file, callback) => {
-      const UniqueImgName =
-        "syncaid" + Date.now() + "_" + Math.round(Math.random() * 1e9);
+      const name = file.originalname.split(".")[0];
       const extension = MIME_TYPES[file.mimetype];
-      callback(null, UniqueImgName + "." + extension);
+      callback(null, file.originalname);
     },
   }),
 
-  limits: 10 * 1024 * 1024,
+ 
   fileFilter(req, file, cb) {
-    if (!file.originalname.match(/\.(png|jpg|jpeg)$/)) {
+    if (!file.originalname.match(/\.(png|jpg|jpeg|JPG|JPEG)$/)) {
       return cb(new Error("Please upload a Image"));
     }
     cb(undefined, true);

@@ -40,7 +40,7 @@ export function getPatients(req, res) {
   
   User.findById(req.params.id)
     .then(async (docs) => {
-       var guardians = [];
+       var patients = [];
        for (const item of docs.Patients)  {
       
        let patient = await User.findById(item._id);
@@ -279,40 +279,22 @@ export async function updatePassword(req, res) {
     }
 }
 
+export async function updatePhoto(req,res) {
+  var url = `${req.protocol}://${req.get('host')}${process.env.IMGURL}/${req.file.filename}`
+  User.findOneAndUpdate({_id:req.params.ID},
+    {
+      ProfilePhoto: `${req.protocol}://${req.get('host')}${process.env.IMGURL}/${req.file.filename}`
+    }).then((docs) => {
+      res.status(200).json(url);
+    })
+    .catch((err) => {
+      res.status(500).json({ error: err });
+      console.log(err);
+    });
+}
+
 export async function updateOnce(req, res) {
-  if (req.file) {
-    var EncryptedImgPath = CryptoJS.AES.encrypt(
-      `${req.protocol}://${req.get("host")}${process.env.IMGURL}/${
-        req.file.filename
-      }`,
-      process.env.IMGKEY
-    ).toString();
-    User.findOneAndUpdate(
-      { _id: req.params.id },
-      {
-        FirstName: req.body.FirstName,
-        LastName: req.body.LastName,
-        Age: req.body.Age,
-        Gender: req.body.Gender,
-        Country: req.body.Country,
-        Tel: req.body.Tel,
-        Role: req.body.role,
-        Email: req.body.Email,
-        ProfilePhoto: EncryptedImgPath,
-        FaintsPerDay: req.body.FaintsPerDay,
-        AgeWhenDiagnosed: req.body.AgeWhenDiagnosed,
-        Location: req.body.Location,
-        Guardians: req.body.Guardians,
-        Patients: req.body.Patients,
-      }
-    )
-      .then((docs) => {
-        res.status(200).json(docs);
-      })
-      .catch((err) => {
-        res.status(500).json({ error: err });
-      });
-  } else {
+  
     User.findOneAndUpdate(
       { _id: req.params.ID },
       {
@@ -339,7 +321,7 @@ export async function updateOnce(req, res) {
         console.log(err);
       });
   }
-}
+
 
 export function deleteOnce(req, res) {
   User.findOneAndRemove(req.params.id, req.body)

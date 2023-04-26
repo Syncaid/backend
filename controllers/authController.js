@@ -24,7 +24,39 @@ export async function register(req, res) {
     FirstName,
     LastName,
     Email: Email.toLowerCase(),
+    ProfilePhoto:`${req.protocol}://${req.get('host')}${process.env.IMGURL}/default.jpg`,
     Password: await bcrypt.hash(Password, 10),
+  }); 
+  
+  User.create(NewUser)
+    .then((docs) => {
+      req.body.Email = docs.Email;
+      sendverifyEmail(req,res);
+      res.status(201).json(docs);
+    })
+    .catch((err) => {
+      res.status(500).json({ error: err });
+    });
+}
+
+export async function googleregister(req, res) {
+  const { FirstName, LastName, Email } = req.body;
+  
+  if (!(Email && FirstName && LastName)) {
+    res.status(400).send("All fields are required");
+  }
+
+  const oldUser = await User.findOne({ Email });
+  if (oldUser) {
+    return res.status(409).send("User already exists");
+  }
+
+  let NewUser = new User({
+    FirstName,
+    LastName,
+    Email: Email.toLowerCase(),
+    ProfilePhoto:`${req.protocol}://${req.get('host')}${process.env.IMGURL}/default.jpg`,
+    Password: await bcrypt.hash(Email, 10),
   });
 
   User.create(NewUser)
@@ -38,12 +70,12 @@ export async function register(req, res) {
 
 export async function login(req, res) {
   const { Email, Password } = req.body;
-
-  if (!(Email && Password)) {
+  
+  if (!Email || !Password) {
     res.status(400).send("All fields are required");
   }
 
-  const user = await User.findOne({ Email: req.body.Email });
+  const user = await User.findOne({ Email: req.body.Email.toLowerCase() });
 
   if (user) {
     if (await bcrypt.compare(Password, user.Password)) {
@@ -75,7 +107,7 @@ export async function googlelogin(req, res) {
     res.status(400).send("All fields are required");
   }
 
-  const user = await User.findOne({ Email: req.body.Email });
+  const user = await User.findOne({ Email: req.body.Email.toLowerCase()  });
 
   if (user) {
   
@@ -113,7 +145,7 @@ export async function logout(req, res) {
 }
 
 export async function sendverifyEmail(req, res) {
-  let user = await User.findOne({ Email: req.body.Email });
+  let user = await User.findOne({ Email: req.body.Email.toLowerCase()  });
   if (user) {
     let newemailtoken = new Emailtoken({
       userId: user._id,
@@ -122,13 +154,14 @@ export async function sendverifyEmail(req, res) {
     newemailtoken.token = token;
     Emailtoken.create(newemailtoken)
       .then((docs) => {
-        res.status(200).json("emailtoken created");
+       // res.status(200).json(user.Email);
         const message = `${req.protocol}://${process.env.DEVURL}:${process.env.PORT}/user/verify/${user._id}/${newemailtoken.token}`;
 
         verificationEmail(user.Email, "Email verification", message);
       })
       .catch((err) => {
-        res.status(500).json({ error: err });
+        console.log(err)
+      //  res.status(500).json({ error: err });
       });
 
    
@@ -152,7 +185,7 @@ export async function verifyEmail(req, res) {
 }
 
 export async function sendpasswordEmail(req, res) {
-  let user = await User.findOne({ Email: req.body.Email });
+  let user = await User.findOne({ Email: req.body.Email.toLowerCase()  });
   if (user) {
     const OTP = Math.floor(1000 + Math.random() * 9000).toString();
     User.findOneAndUpdate(
