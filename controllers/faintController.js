@@ -64,7 +64,7 @@ export async function updateOnce(req, res) {
 }
 
 export function deleteOnce(req, res) {
-  Faint.findOneAndRemove(req.id, req.body)
+  Faint.findByIdAndRemove(req.params.id)
     .then((docs) => {
       res.status(200).json(docs);
     })

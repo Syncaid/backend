@@ -29,9 +29,7 @@ export async function register(req, res) {
   }); 
   
   User.create(NewUser)
-    .then((docs) => {
-      req.body.Email = docs.Email;
-      sendverifyEmail(req,res);
+    .then((docs) => {    
       res.status(201).json(docs);
     })
     .catch((err) => {
@@ -137,7 +135,7 @@ export async function logout(req, res) {
     }
   )
     .then((docs) => {
-      res.status(201).json(docs);
+      res.status(200).json(docs);
     })
     .catch((err) => {
       res.status(500).json({ error: err });
@@ -154,14 +152,13 @@ export async function sendverifyEmail(req, res) {
     newemailtoken.token = token;
     Emailtoken.create(newemailtoken)
       .then((docs) => {
-       // res.status(200).json(user.Email);
+        res.status(200).json(user.Email);
         const message = `${req.protocol}://${process.env.DEVURL}:${process.env.PORT}/user/verify/${user._id}/${newemailtoken.token}`;
-
         verificationEmail(user.Email, "Email verification", message);
       })
       .catch((err) => {
         console.log(err)
-      //  res.status(500).json({ error: err });
+      res.status(500).json({ error: err });
       });
 
    
@@ -197,7 +194,7 @@ export async function sendpasswordEmail(req, res) {
       .then(async (docs) => {
         passwordEmail(user.Email, "Password reset", OTP);
         user.vString = OTP;
-        res.status(200).json(OTP);
+        res.status(200).json({"OTP": OTP});
       })
       .catch((err) => {
         res.status(500).json({ error: err });
