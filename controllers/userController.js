@@ -285,7 +285,7 @@ export async function updatePhoto(req,res) {
     {
       ProfilePhoto: `${req.protocol}://${req.get('host')}${process.env.IMGURL}/${req.file.filename}`
     }).then((docs) => {
-      res.status(200).json(url);
+      res.status(200).json({"URL":url});
     })
     .catch((err) => {
       res.status(500).json({ error: err });
