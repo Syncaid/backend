@@ -6,18 +6,26 @@ import userRoutes from "./routes/userRoutes.js";
 import faintRoutes from "./routes/faintRoutes.js";
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
+import handleSocketConnection from './controllers/socketController.js';
+import { Server } from 'socket.io';
+import http from 'http';
+
+
+
+
+
 const app = express();
 
 dotenv.config();
 const hostname = process.env.DEVURL;
 const port = process.env.PORT;
-const databaseName = process.env.DBNAME;
+
 const databaseURL = process.env.DBURL;
 mongoose.set("debug", true);
 mongoose.Promise = global.Promise;
 
 mongoose
-  .connect(`mongodb://${databaseURL}/${databaseName}`)
+  .connect(databaseURL)
   .then(() => {
     console.log(`Connected to database`);
   })
@@ -54,6 +62,11 @@ const swaggerDocs = swaggerJSDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve,swaggerUi.setup(swaggerDocs));
 
 
-app.listen(port, hostname, () => {
-  console.log(`Server running`);
+const server = http.createServer(app);
+const io = new Server(server);
+handleSocketConnection(io);
+
+server.listen(port, hostname, () => {
+  console.log(`Server running on ${hostname}:${port}`);
 });
+

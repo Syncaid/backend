@@ -66,13 +66,18 @@ export async function googleregister(req, res) {
     });
 }
 
+
+
+
+
+
 export async function login(req, res) {
   const { Email, Password } = req.body;
   
   if (!Email || !Password) {
     res.status(400).send("All fields are required");
   }
-
+ 
   const user = await User.findOne({ Email: req.body.Email.toLowerCase() });
 
   if (user) {
@@ -83,7 +88,8 @@ export async function login(req, res) {
       user.Token = newToken;
       user
         .updateOne({ _id: user._id, Token: newToken })
-        .then((docs) => {
+        .then(async (docs) => {
+    
           res.status(200).json(user);
         })
         .catch((err) => {
@@ -182,8 +188,9 @@ export async function verifyEmail(req, res) {
 }
 
 export async function sendpasswordEmail(req, res) {
-  let user = await User.findOne({ Email: req.body.Email.toLowerCase()  });
+  const  user = await User.findOne({ Email: req.body.Email});
   if (user) {
+    console.log("user found")
     const OTP = Math.floor(1000 + Math.random() * 9000).toString();
     User.findOneAndUpdate(
       { _id: user._id },
@@ -197,8 +204,12 @@ export async function sendpasswordEmail(req, res) {
         res.status(200).json({"OTP": OTP});
       })
       .catch((err) => {
+        console.lgo(err)
         res.status(500).json({ error: err });
       });
+  }
+  else { 
+    console.log("user not found")
   }
 }
 
@@ -227,6 +238,9 @@ export async function resetPassword(req, res) {
           res.status(500).json("Cant reset password");
         });
     }
+  }
+  else { 
+    console.log("user not found")
   }
   // }
 }
